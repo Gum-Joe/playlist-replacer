@@ -1,0 +1,34 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "Rust: cargo build - playlist-replacer"
+		},
+		{
+			"type": "cargo",
+			"command": "",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "Rust: cargo check - playlist-replacer"
+		},
+		{
+			"type": "cargo",
+			"command": "",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"label": "Rust: cargo run - playlist-replacer"
+		}
+	]
+}
