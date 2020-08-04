@@ -1,10 +1,13 @@
 #[macro_use] extern crate log;
 use text_io::read;
 use std::process::{Command};
+use std::env;
+use std::path::{Path, PathBuf};
 #[macro_use] extern crate prettytable;
 use prettytable::{Table, Row, Cell};
 mod util;
 use crate::util::logger;
+use std::borrow::Cow;
 
 fn fetch_playerlists_from_sdcard(directory_as_string: &str) -> Result<Vec<u8>, String> {
     info!("Grabbing list of .m3u files from /sdcard/{}", directory_as_string);
@@ -26,6 +29,18 @@ fn fetch_playerlists_from_sdcard(directory_as_string: &str) -> Result<Vec<u8>, S
 }
 
 
+fn grab_playlist(playlist: &str, output_path: &str) -> Result<Vec<u8>, String> {
+    info!("Grabbing playlist {} from ADB...", playlist);
+    debug!("Running adb....");
+    let output = Command::new("adb")
+        .arg("pull")
+        .arg(playlist)
+        .arg(output_path)
+        .output()
+        .expect("Could not execute adb command!");
+    return Ok(output.stdout);
+}
+
 fn main() {
     logger::setup_logger();
     info!("Playlist Replacer v{}", env!("CARGO_PKG_VERSION"));
@@ -37,7 +52,7 @@ fn main() {
         Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
     };
 
-    let split_output = output_string.split("\n");
+    let split_output = output_string.split("\r\n");
     let out_collected: Vec<&str> = split_output.collect();
 
     let mut table = Table::new();
@@ -48,7 +63,16 @@ fn main() {
     table.printstd();
 
     info!("Please select a playlist from above by ID:");
-    let playlist_number: u32 = read!("{}\r\n");
+    let playlist_number: usize = read!("{}\r\n");
     debug!("{}", playlist_number);
+
+    let playlist = out_collected[playlist_number];
+    
+    let playlist_file_name = Path::new(playlist).file_name().unwrap();
+    let output_path = env::current_dir().unwrap().join(playlist_file_name);
+
+    grab_playlist(playlist, output_path.to_str().unwrap());
+
+    println!("{}", output_path.to_str().unwrap());
 
 }
